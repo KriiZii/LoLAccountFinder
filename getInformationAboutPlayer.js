@@ -62,7 +62,18 @@ function loadPlayersFromFile() {
 
 function saveToFile() {
     log("Saving results...");
+    playerData.forEach(player => {
+        delete player.summonerId
+        delete player.puuid
+        delete player.matches
+    })
     writeFileSync('./matches.json', JSON.stringify(playerData, null, 2));
+    const csv = summonersWithNames.map(o => //this converts it to csv
+		Object.values(o).join(',')
+	).join('\n')
+
+	log("Exporting .csv file...") //logs when it's exporting
+	writeFileSync('./output.csv', csv) //writes the file in csv
     log("Done!");
 }
 
@@ -91,7 +102,10 @@ function getChampionNames(player) {
 
         const allParticipants = matchData.info.participants;
         const participant = allParticipants.find(obj => obj.puuid === player.puuid);
-        player.champions.push(participant.championName);
+        const exists = player.champions.includes(participant.championName)
+        if(!exists) {
+            player.champions.push(participant.championName);
+        }
     });
 
     checkAndSave();
