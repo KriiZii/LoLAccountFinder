@@ -69,7 +69,7 @@ function saveToFile() {
     })
     writeFileSync('./matches.json', JSON.stringify(playerData, null, 2));
     const csv = playerData.map(o => {
-        const gameNameAndTagLine = `${o.gameName}${o.tagLine}`
+        const gameNameAndTagLine = `${o.gameName}#${o.tagLine}`
         const championsList = o.champions.join(' ')
 		return [gameNameAndTagLine, championsList].join(`,`)
     }).join('\n')
