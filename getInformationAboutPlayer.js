@@ -68,9 +68,11 @@ function saveToFile() {
         delete player.matches
     })
     writeFileSync('./matches.json', JSON.stringify(playerData, null, 2));
-    const csv = summonersWithNames.map(o => //this converts it to csv
-		Object.values(o).join(',')
-	).join('\n')
+    const csv = playerData.map(o => {
+        const gameNameAndTagLine = `${o.gameName}${o.tagLine}`
+        const championsList = o.champions.join(' ')
+		return [gameNameAndTagLine, championsList].join(`,`)
+    }).join('\n')
 
 	log("Exporting .csv file...") //logs when it's exporting
 	writeFileSync('./output.csv', csv) //writes the file in csv
