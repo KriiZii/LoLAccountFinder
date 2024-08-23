@@ -63,19 +63,19 @@ function loadPlayersFromFile() {
 function saveToFile() {
     log("Saving results...");
     playerData.forEach(player => {
-        delete player.summonerId
-        delete player.puuid
-        delete player.matches
+        delete player.summonerId;
+        delete player.puuid;
+        delete player.matches;
     })
     writeFileSync('./matches.json', JSON.stringify(playerData, null, 2));
     const csv = playerData.map(o => {
-        const gameNameAndTagLine = `${o.gameName}#${o.tagLine}`
-        const championsList = o.champions.join(' ')
-		return [gameNameAndTagLine, championsList].join(`,`)
+        const gameNameAndTagLine = `${o.gameName}#${o.tagLine}`;
+        const championsList = o.champions.join(' ');
+		return [gameNameAndTagLine, championsList].join(`,`);
     }).join('\n')
 
-	log("Exporting .csv file...") //logs when it's exporting
-	writeFileSync('./output.csv', csv) //writes the file in csv
+	log("Exporting .csv file..."); //logs when it's exporting
+	writeFileSync('./output.csv', csv); //writes the file in csv
     log("Done!");
 }
 
@@ -91,10 +91,11 @@ function getMatches(player) {
     playerData.push(player);
     log(`Getting champions for ${player.gameName}`);
     player.champions = [];
-    getChampionNames(player);
+    player.roles = [];
+    getPlayerInfo(player);
 }
 
-function getChampionNames(player) {
+function getPlayerInfo(player) {
     const currentPlayerMatches = player.matches;
     currentPlayerMatches.forEach(match => {
         const preparedUrl = `https://${ACCOUNTS_SUBDOM}.api.riotgames.com/lol/match/v5/matches/${match}`;
@@ -104,9 +105,17 @@ function getChampionNames(player) {
 
         const allParticipants = matchData.info.participants;
         const participant = allParticipants.find(obj => obj.puuid === player.puuid);
-        const exists = player.champions.includes(participant.championName)
-        if(!exists) {
+        const championExists = player.champions.includes(participant.championName);
+        if(!championExists) {
             player.champions.push(participant.championName);
+        }
+        let role = participant.teamPosition;
+        if(role === "UTILITY") {
+            role = "SUPPORT"
+        }
+        const roleExists = player.roles.includes(role);
+        if(!roleExists) {
+            player.roles.push(role);
         }
     });
 
