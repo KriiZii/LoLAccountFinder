@@ -19,7 +19,8 @@ function makeSyncCall(url) {
 
         if (res.statusCode === 429) {
             // Handle rate limiting
-            responseFailed({ status: 429, headers: res.headers }, null);
+            responseFailed({ status: 429, headers: res.headers }, url);
+            return makeSyncCall(url);
         } else if (res.statusCode !== 200) {
             log(`API err: ${res.statusMessage}`);
             return null;
@@ -32,11 +33,17 @@ function makeSyncCall(url) {
     }
 }
 
-function responseFailed(response, next, param = null) {
+function blockSleep(seconds) {
+    const startTime = Date.now();
+    while (Date.now() - startTime < seconds * 1000) {
+    }
+}
+
+function responseFailed(response) {
     if (response.status === 429) {
         const retryAfter = parseInt(response.headers['retry-after']) + 2;
         log(`Sleeping for ${retryAfter}s.....`);
-        setTimeout(() => { if (next) next(param); }, retryAfter * 1000);
+        blockSleep(retryAfter)
     } else {
         log("API err:", response.statusText || "Unknown Error");
     }
