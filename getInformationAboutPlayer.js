@@ -34,8 +34,10 @@ function makeSyncCall(url) {
 }
 
 function blockSleep(seconds) {
-    const startTime = Date.now();
-    while (Date.now() - startTime < seconds * 1000) {
+    const endTime = Date.now() + seconds * 1000;
+    while (Date.now() < endTime) {
+        // Sleep for 100 milliseconds between checks to reduce CPU usage
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
     }
 }
 
@@ -92,7 +94,8 @@ function saveToFile() {
         const zhonyaList = o.zhonyaPlacement.join(' ');
         const bootsList = o.bootsPlacement.join(' ');
         const controlWardList = o.controlWardPlacement.join(' ');
-		return [gameNameAndTagLine, championsList, playerRoles, playerSpell1, playerSpell2, zhonyaList, bootsList, controlWardList].join(`,`);
+        const activeItemList = o.otherActivePlacement.join(' ');
+		return [gameNameAndTagLine, championsList, playerRoles, playerSpell1, playerSpell2, zhonyaList, activeItemList, bootsList, controlWardList].join(`,`);
     }).join('\n')
 
 	log("Exporting .csv file..."); //logs when it's exporting
@@ -110,7 +113,7 @@ function getMatches(player) {
 
     player.matches = matchData;
     playerData.push(player);
-    log(`Getting champions and roles for ${player.gameName}`);
+    log(`Getting champs and preferences for ${player.gameName}`);
     player.champions = [];
     player.roles = [];
     player.summonerspell1 = [];
@@ -118,6 +121,7 @@ function getMatches(player) {
     player.zhonyaPlacement = [];
     player.bootsPlacement = [];
     player.controlWardPlacement = [];
+    player.otherActivePlacement = [];
     getPlayerInfo(player);
 }
 
@@ -224,7 +228,49 @@ function getPlayerInfo(player) {
                 }
             }
         }
+        const activeItem = [8001, 3877, 3867, 3869, 4637, 3870, 3152, 3109, 3190, 3139, 3222, 6698, 3140, 3143, 3074, 3107, 3866, 2065, 3876, 6631, 3077, 3748, 3142, 3871];
+        for (let i = 0; i <= 5; i++) {
+            let itemId = participant[`item${i}`];
+            if (activeItem.includes(itemId)) {
+                if (i>=3) {
+                    let placement = `${i+2}`;
+                    if (!player.otherActivePlacement.includes(placement)) {
+                        player.otherActivePlacement.push(placement);
+                    }
+                }
+                else {
+                    let placement = `${i+1}`;
+                    if (!player.otherActivePlacement.includes(placement)) {
+                        player.otherActivePlacement.push(placement);
+                    }
+                }
+            }
+        }
     });
+    //Only saving the highest played role and highest picked summoner spells
+    let maxRole = player.roles[0];
+    for (let i = 1; i < player.roles.length; i++) {
+        if (player.roles[i][1] > maxRole[1]) {
+            maxRole = player.roles[i];
+        }
+    }
+    player.roles = [maxRole];
+
+    let maxSpell1 = player.summonerspell1[0];
+    for (let i = 1; i < player.summonerspell1.length; i++) {
+        if (player.summonerspell1[i][1] > maxSpell1[1]) {
+            maxSpell1 = player.summonerspell1[i];
+        }
+    }
+    player.summonerspell1 = [maxSpell1];
+
+    let maxSpell2 = player.summonerspell2[0];
+    for (let i = 1; i < player.summonerspell2.length; i++) {
+        if (player.summonerspell2[i][1] > maxSpell2[1]) {
+            maxSpell2 = player.summonerspell2[i];
+        }
+    }
+    player.summonerspell2 = [maxSpell2];
     checkAndSave();
 }
 
