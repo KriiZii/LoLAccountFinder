@@ -67,15 +67,16 @@ function saveToFile() {
         delete player.puuid;
         delete player.matches;
     })
-    writeFileSync('./matches.json', JSON.stringify(playerData, null, 2));
+    writeFileSync('./newPlayerInfo.json', JSON.stringify(playerData, null, 2));
     const csv = playerData.map(o => {
         const gameNameAndTagLine = `${o.gameName}#${o.tagLine}`;
         const championsList = o.champions.join(' ');
-		return [gameNameAndTagLine, championsList].join(`,`);
+        const playerRoles = o.roles.map(role => `${role[1]}x ${role[0]}`).join(" ")
+		return [gameNameAndTagLine, championsList, playerRoles].join(`,`);
     }).join('\n')
 
 	log("Exporting .csv file..."); //logs when it's exporting
-	writeFileSync('./output.csv', csv); //writes the file in csv
+	writeFileSync('./newPlayerInfo.csv', csv); //writes the file in csv
     log("Done!");
 }
 
@@ -89,13 +90,14 @@ function getMatches(player) {
 
     player.matches = matchData;
     playerData.push(player);
-    log(`Getting champions for ${player.gameName}`);
+    log(`Getting champions and roles for ${player.gameName}`);
     player.champions = [];
     player.roles = [];
     getPlayerInfo(player);
 }
 
 function getPlayerInfo(player) {
+    //Goes through every match
     const currentPlayerMatches = player.matches;
     currentPlayerMatches.forEach(match => {
         const preparedUrl = `https://${ACCOUNTS_SUBDOM}.api.riotgames.com/lol/match/v5/matches/${match}`;
@@ -103,28 +105,32 @@ function getPlayerInfo(player) {
 
         if (!matchData) return; // If the request fails, skip this match
 
+        //Champions
         const allParticipants = matchData.info.participants;
         const participant = allParticipants.find(obj => obj.puuid === player.puuid);
         const championExists = player.champions.includes(participant.championName);
         if(!championExists) {
             player.champions.push(participant.championName);
         }
+
+        //Roles
         let role = participant.teamPosition;
         if(role === "UTILITY") {
             role = "SUPPORT"
         }
-        const roleExists = player.roles.includes(role);
-        if(!roleExists) {
-            player.roles.push(role);
+        const roleIndex = player.roles.findIndex(item => item[0] === role)
+        if (roleIndex === -1) {
+            player.roles.push([role, 1]);
+        }
+        else {
+            player.roles[roleIndex][1]++
         }
     });
-
     checkAndSave();
 }
 
 function checkAndSave() {
     const allPlayersProcessed = playerInfo.every(player => playerData.some(pd => pd.puuid === player.puuid));
-
     if (allPlayersProcessed) {
         saveToFile();
     }

@@ -10,7 +10,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # Testing files
-matches.json
+newPlayerInfo.json
+newPlayerInfo.csv
 output.csv
 output.json
 a.json
