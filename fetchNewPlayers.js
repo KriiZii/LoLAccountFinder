@@ -1,10 +1,11 @@
 // PACKAGES
 const { log } = require("console") //get log from console module and make it a constant
 const { writeFileSync, existsSync } = require("fs") //get writeFileSync and existsSync from console module and make it a constant
+require('dotenv').config()
 
 // CONSTANTS
 
-const API_KEY = "" //API Key
+const API_KEY = process.env.API_KEY;
 
 const ACCOUNTS_SUBDOM = 'europe' //subdomain for accounts-v1, this is for riot accounts, not league accounts
 const SUMMONER_SUBDOM = 'euw1' //subdomain for league specific endpoints
