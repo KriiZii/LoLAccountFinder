@@ -47,6 +47,17 @@ function responseFailed(response, next, param = null) {
 
 // FUNCTIONS
 let playerData = [];
+const spellMap = {
+    "7": "HEAL",
+    "6": "GHOST",
+    "21": "BARRIER",
+    "3": "EXHAUST",
+    "4": "FLASH",
+    "12": "TELEPORT",
+    "11": "SMITE",
+    "1": "CLEANSE",
+    "14": "IGNITE"
+};
 
 log(`Starting...`);
 
@@ -72,7 +83,9 @@ function saveToFile() {
         const gameNameAndTagLine = `${o.gameName}#${o.tagLine}`;
         const championsList = o.champions.join(' ');
         const playerRoles = o.roles.map(role => `${role[1]}x ${role[0]}`).join(" ")
-		return [gameNameAndTagLine, championsList, playerRoles].join(`,`);
+        const playerSpell1 = o.summonerspell1.map(spell => `${spell[1]}x ${spell[0]}`).join(" ")
+        const playerSpell2 = o.summonerspell2.map(spell => `${spell[1]}x ${spell[0]}`).join(" ")
+		return [gameNameAndTagLine, championsList, playerRoles, playerSpell1, playerSpell2].join(`,`);
     }).join('\n')
 
 	log("Exporting .csv file..."); //logs when it's exporting
@@ -93,6 +106,8 @@ function getMatches(player) {
     log(`Getting champions and roles for ${player.gameName}`);
     player.champions = [];
     player.roles = [];
+    player.summonerspell1 = [];
+    player.summonerspell2 = [];
     getPlayerInfo(player);
 }
 
@@ -116,17 +131,39 @@ function getPlayerInfo(player) {
         //Roles
         let role = participant.teamPosition;
         if(role === "UTILITY") {
-            role = "SUPPORT"
+            role = "SUPPORT";
         }
-        const roleIndex = player.roles.findIndex(item => item[0] === role)
+        const roleIndex = player.roles.findIndex(item => item[0] === role);
         if (roleIndex === -1) {
             player.roles.push([role, 1]);
         }
         else {
-            player.roles[roleIndex][1]++
+            player.roles[roleIndex][1]++;
+        }
+
+        //Summoner Spells
+        let Spell1 = getSummonerSpell(participant.summoner1Id);
+        let Spell2 = getSummonerSpell(participant.summoner2Id);
+        const spell1Index = player.summonerspell1.findIndex(item => item[0] === Spell1);
+        const spell2Index = player.summonerspell2.findIndex(item => item[0] === Spell2);
+        if (spell1Index === -1) {
+            player.summonerspell1.push([Spell1, 1]);
+        }
+        else {
+            player.summonerspell1[spell1Index][1]++;
+        }
+        if (spell2Index === -1) {
+            player.summonerspell2.push([Spell2, 1]);
+        }
+        else {
+            player.summonerspell2[spell2Index][1]++;
         }
     });
     checkAndSave();
+}
+
+function getSummonerSpell(spellId) {
+    return spellMap[spellId] || "SPELL NOT IN RANKED";
 }
 
 function checkAndSave() {

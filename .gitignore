@@ -14,7 +14,6 @@ newPlayerInfo.json
 newPlayerInfo.csv
 output.csv
 output.json
-a.json
 
 # npm cache directory
 .npm
