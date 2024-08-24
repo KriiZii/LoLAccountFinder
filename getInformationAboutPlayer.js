@@ -19,10 +19,7 @@ function makeSyncCall(url) {
 
         if (res.statusCode === 429) {
             // Handle rate limiting
-            const retryAfter = parseInt(res.headers['retry-after']) + 2;
             responseFailed({ status: 429, headers: res.headers }, null);
-            log(`Sleeping for ${retryAfter}s.....`);
-            setTimeout(() => { return makeSyncCall(url); }, retryAfter * 1000);
         } else if (res.statusCode !== 200) {
             log(`API err: ${res.statusMessage}`);
             return null;
@@ -82,10 +79,13 @@ function saveToFile() {
     const csv = playerData.map(o => {
         const gameNameAndTagLine = `${o.gameName}#${o.tagLine}`;
         const championsList = o.champions.join(' ');
-        const playerRoles = o.roles.map(role => `${role[1]}x ${role[0]}`).join(" ")
-        const playerSpell1 = o.summonerspell1.map(spell => `${spell[1]}x ${spell[0]}`).join(" ")
-        const playerSpell2 = o.summonerspell2.map(spell => `${spell[1]}x ${spell[0]}`).join(" ")
-		return [gameNameAndTagLine, championsList, playerRoles, playerSpell1, playerSpell2].join(`,`);
+        const playerRoles = o.roles.map(role => `${role[1]}x ${role[0]}`).join(" ");
+        const playerSpell1 = o.summonerspell1.map(spell => `${spell[1]}x ${spell[0]}`).join(" ");
+        const playerSpell2 = o.summonerspell2.map(spell => `${spell[1]}x ${spell[0]}`).join(" ");
+        const zhonyaList = o.zhonyaPlacement.join(' ');
+        const bootsList = o.bootsPlacement.join(' ');
+        const controlWardList = o.controlWardPlacement.join(' ');
+		return [gameNameAndTagLine, championsList, playerRoles, playerSpell1, playerSpell2, zhonyaList, bootsList, controlWardList].join(`,`);
     }).join('\n')
 
 	log("Exporting .csv file..."); //logs when it's exporting
@@ -96,7 +96,7 @@ function saveToFile() {
 // The whole object of a player is put into here
 function getMatches(player) {
     const currentPlayerPuuid = player.puuid;
-    const preparedUrl = `https://${ACCOUNTS_SUBDOM}.api.riotgames.com/lol/match/v5/matches/by-puuid/${currentPlayerPuuid}/ids?type=ranked`;
+    const preparedUrl = `https://${ACCOUNTS_SUBDOM}.api.riotgames.com/lol/match/v5/matches/by-puuid/${currentPlayerPuuid}/ids?queue=420&type=ranked`;
     const matchData = makeSyncCall(preparedUrl);
 
     if (!matchData) return; // If the request fails, skip further processing
@@ -108,6 +108,9 @@ function getMatches(player) {
     player.roles = [];
     player.summonerspell1 = [];
     player.summonerspell2 = [];
+    player.zhonyaPlacement = [];
+    player.bootsPlacement = [];
+    player.controlWardPlacement = [];
     getPlayerInfo(player);
 }
 
@@ -158,12 +161,68 @@ function getPlayerInfo(player) {
         else {
             player.summonerspell2[spell2Index][1]++;
         }
+
+        //Items
+        const zhonyaItems = [3157, 223157, 2420];
+        for (let i = 0; i <= 5; i++) {
+            let itemId = participant[`item${i}`];
+            if (zhonyaItems.includes(itemId)) {
+                if (i>=3) {
+                    let placement = `${i+2}`;
+                    if (!player.zhonyaPlacement.includes(placement)) {
+                        player.zhonyaPlacement.push(placement);
+                    }
+                }
+                else {
+                    let placement = `${i+1}`;
+                    if (!player.zhonyaPlacement.includes(placement)) {
+                        player.zhonyaPlacement.push(placement);
+                    }
+                }
+            }
+        }
+        const boots = [1001, 3006, 3009, 3158, 3111, 3047, 3020, 3010, 2422, 3013];
+        for (let i = 0; i <= 5; i++) {
+            let itemId = participant[`item${i}`];
+            if (boots.includes(itemId)) {
+                if (i>=3) {
+                    let placement = `${i+2}`;
+                    if (!player.bootsPlacement.includes(placement)) {
+                        player.bootsPlacement.push(placement);
+                    }
+                }
+                else {
+                    let placement = `${i+1}`;
+                    if (!player.bootsPlacement.includes(placement)) {
+                        player.bootsPlacement.push(placement);
+                    }
+                }
+            }
+        }
+        const controlWard = [2055];
+        for (let i = 0; i <= 5; i++) {
+            let itemId = participant[`item${i}`];
+            if (controlWard.includes(itemId)) {
+                if (i>=3) {
+                    let placement = `${i+2}`;
+                    if (!player.controlWardPlacement.includes(placement)) {
+                        player.controlWardPlacement.push(placement);
+                    }
+                }
+                else {
+                    let placement = `${i+1}`;
+                    if (!player.controlWardPlacement.includes(placement)) {
+                        player.controlWardPlacement.push(placement);
+                    }
+                }
+            }
+        }
     });
     checkAndSave();
 }
 
 function getSummonerSpell(spellId) {
-    return spellMap[spellId] || "SPELL NOT IN RANKED";
+    return spellMap[spellId] || spellId;
 }
 
 function checkAndSave() {
