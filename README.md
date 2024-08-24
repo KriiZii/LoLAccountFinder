@@ -1,4 +1,4 @@
-The project contains two key scripts:
+The project contains three key scripts:
 1. fetchNewPlayers.js: This script goes through the League of Legends leaderboard (through ranks specified in RANKS_TO_GET) and saves accounts that could potentially belong to professional players.
 2. getInformationAboutPlayer.js: After finding potential pro players, this script retrieves their last 20 (or less depending on when the account was created) matches and exports information about the champions they played, what summoner spells they used, what item slot they have zhonyas, boots, and control wards, and then it saves that in both JSON and CSV formats.
 3. fetchPlayerPuuids.js: this script is used when I already have some account names and want to just get their puuids to use for getInformationAboutPlayer.js
