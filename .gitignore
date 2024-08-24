@@ -9,6 +9,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Testing files
+matches.json
+output.csv
+output.json
+a.json
+
 # npm cache directory
 .npm
 
