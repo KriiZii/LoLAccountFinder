@@ -69,7 +69,8 @@ log(`Starting...`);
 
 function loadPlayersFromFile() {
     try {
-        const data = readFileSync('./output.json');
+        // const data = readFileSync('./output.json');
+        const data = readFileSync('./puuidOutput.json');
         return JSON.parse(data);
     } catch (err) {
         log("Error reading output file:", err);
@@ -80,7 +81,9 @@ function loadPlayersFromFile() {
 function saveToFile() {
     log("Saving results...");
     playerData.forEach(player => {
-        delete player.summonerId;
+        if (player.hasOwnProperty("summonerId")) {
+            delete player.summonerId;
+        }
         delete player.puuid;
         delete player.matches;
     })
