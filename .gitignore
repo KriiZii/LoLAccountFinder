@@ -14,6 +14,8 @@ newPlayerInfo.json
 newPlayerInfo.csv
 output.csv
 output.json
+noPuuidPlayers.json
+puuidOutput.json
 
 # npm cache directory
 .npm
