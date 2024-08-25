@@ -72,7 +72,7 @@ function saveToFile() {
 
 function getPuuid(player) {
     const currentPlayerGameName = encodeURIComponent(player.gameName);
-    const currentPlayerTagLine = player.tagLine;
+    const currentPlayerTagLine = encodeURIComponent(player.tagLine);
     const preparedUrl = `https://${ACCOUNTS_SUBDOM}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${currentPlayerGameName}/${currentPlayerTagLine}`;
     const puuids = makeSyncCall(preparedUrl);
 
