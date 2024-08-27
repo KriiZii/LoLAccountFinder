@@ -90,14 +90,14 @@ function saveToFile() {
     writeFileSync('./newPlayerInfo.json', JSON.stringify(playerData, null, 2));
     const csv = playerData.map(o => {
         const gameNameAndTagLine = `${o.gameName}#${o.tagLine}`;
-        const championsList = o.champions.join(' ');
-        const playerRoles = o.roles.map(role => `${role[1]}x ${role[0]}`).join(" ");
-        const playerSpell1 = o.summonerspell1.map(spell => `${spell[1]}x ${spell[0]}`).join(" ");
-        const playerSpell2 = o.summonerspell2.map(spell => `${spell[1]}x ${spell[0]}`).join(" ");
-        const zhonyaList = o.zhonyaPlacement.join(' ');
-        const bootsList = o.bootsPlacement.join(' ');
-        const controlWardList = o.controlWardPlacement.join(' ');
-        const activeItemList = o.otherActivePlacement.join(' ');
+        const championsList = o.champions.length ? o.champions.join(' ') : 'None';
+        const playerRoles = o.roles.length ? o.roles.map(role => `${role[1]}x ${role[0]}`).join(" ") : 'None';
+        const playerSpell1 = o.summonerspell1.length ? o.summonerspell1.map(spell => `${spell[1]}x ${spell[0]}`).join(" ") : 'None';
+        const playerSpell2 = o.summonerspell2.length ? o.summonerspell2.map(spell => `${spell[1]}x ${spell[0]}`).join(" ") : 'None';
+        const zhonyaList = o.zhonyaPlacement.length ? o.zhonyaPlacement.join(' ') : 'None';
+        const bootsList = o.bootsPlacement.length ? o.bootsPlacement.join(' ') : 'None';
+        const controlWardList = o.controlWardPlacement.length ? o.controlWardPlacement.join(' ') : 'None';
+        const activeItemList = o.otherActivePlacement.length ? o.otherActivePlacement.join(' ') : 'None';
 		return [gameNameAndTagLine, championsList, playerRoles, playerSpell1, playerSpell2, zhonyaList, activeItemList, bootsList, controlWardList].join(`,`);
     }).join('\n')
 
